@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <!-- Root element -->
+    <xs:element name="CompanyData">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Employees">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Employee" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="EmployeeID" type="xs:integer" />
+                                        <xs:element name="FirstName" type="xs:string" />
+                                        <xs:element name="LastName" type="xs:string" />
+                                        <xs:element name="SocialSecurityNumber" type="xs:string" />
+                                        <xs:element name="DateOfBirth" type="xs:date" />
+                                        <xs:element name="Position" type="xs:string" />
+                                        <xs:element name="DepartmentID" type="xs:integer" />
+                                        <xs:element name="HireDate" type="xs:date" />
+                                        <xs:element name="Address" type="xs:string" />
+                                        <xs:element name="City" type="xs:string" />
+                                        <xs:element name="State" type="xs:string" />
+                                        <xs:element name="ZipCode" type="xs:string" />
+                                        <xs:element name="ContactNumber" type="xs:string" />
+                                        <xs:element name="Email" type="xs:string" />
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="Payrolls">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Payroll" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="PayrollID" type="xs:integer" />
+                                        <xs:element name="EmployeeID" type="xs:integer" />
+                                        <xs:element name="PayPeriodStartDate" type="xs:date" />
+                                        <xs:element name="PayPeriodEndDate" type="xs:date" />
+                                        <xs:element name="HoursWorked" type="xs:decimal" />
+                                        <xs:element name="RegularPay" type="xs:decimal" />
+                                        <xs:element name="OvertimePay" type="xs:decimal" />
+                                        <xs:element name="GrossPay" type="xs:decimal" />
+                                        <xs:element name="NetPay" type="xs:decimal" />
+                                    </xs:sequence>
+                                    <xs:attribute name="type" type="xs:string" fixed="payroll" />
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompanyData>
+    <Employees>
+        <Employee>
+            <EmployeeID>1</EmployeeID>
+            <FirstName>John</FirstName>
+            <LastName>Doe</LastName>
+            <SocialSecurityNumber>123-45-6789</SocialSecurityNumber>
+            <DateOfBirth>1980-01-01</DateOfBirth>
+            <Position>Software Developer</Position>
+            <DepartmentID>101</DepartmentID>
+            <HireDate>2010-06-15</HireDate>
+            <Address>123 Main St</Address>
+            <City>Anytown</City>
+            <State>CA</State>
+            <ZipCode>90210</ZipCode>
+            <ContactNumber>555-1234</ContactNumber>
+            <Email>john.doe@example.com</Email>
+        </Employee>
+        <!-- Additional Employee entries would follow -->
+    </Employees>
+
+    <Payrolls>
+        <Payroll type="payroll">
+            <PayrollID>1001</PayrollID>
+            <EmployeeID>1</EmployeeID>
+            <PayPeriodStartDate>2023-11-01</PayPeriodStartDate>
+            <PayPeriodEndDate>2023-11-15</PayPeriodEndDate>
+            <HoursWorked>80.0</HoursWorked>
+            <RegularPay>3200.00</RegularPay>
+            <OvertimePay>0.00</OvertimePay>
+            <GrossPay>3200.00</GrossPay>
+            <NetPay>2400.00</NetPay>
+        </Payroll>
+        <!-- Additional Payroll entries would follow -->
+    </Payrolls>
+
+</CompanyData>
