@@ -1,26 +1,15 @@
 package com.example.payrollservice;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.stream.Collectors;
-
-import javax.xml.XMLConstants;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,24 +18,27 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.xml.sax.SAXException;
 
-import com.example.payrollservice.storage.StorageFileNotFoundException;
+import com.example.payrollservice.exceptions.XmlProcessingException;
+import com.example.payrollservice.persistence.repositories.EmployeeRepository;
+import com.example.payrollservice.services.XmlProcessingService;
 import com.example.payrollservice.storage.StorageService;
 
 @Controller
 public class FileUploadController {
 
-	private static final Logger LOG = LoggerFactory.getLogger(FileUploadController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FileUploadController.class);
 
-	private final StorageService storageService;
+    private final StorageService storageService;
+    private final XmlProcessingService xmlProcessingService;
 
-	public FileUploadController(StorageService storageService) {
-		this.storageService = storageService;
+    public FileUploadController(StorageService storageService, EmployeeRepository repository,
+            XmlProcessingService xmlProcessingService) {
+        this.storageService = storageService;
+        this.xmlProcessingService = xmlProcessingService;
+    }
 
-	}
-
-	@GetMapping("/")
+    @GetMapping("/")
 	public String listUploadedFiles(Model model) throws IOException {
 
 		model.addAttribute("files", storageService.loadAll().map(
@@ -57,7 +49,7 @@ public class FileUploadController {
 		return "uploadForm";
 	}
 
-	@GetMapping("/files/{filename:.+}")
+    @GetMapping("/files/{filename:.+}")
 	@ResponseBody
 	public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
 
@@ -70,48 +62,30 @@ public class FileUploadController {
 				"attachment; filename=\"" + file.getFilename() + "\"").body(file);
 	}
 
-	@PostMapping("/")
-	public String handleFileUpload(@RequestParam("file") MultipartFile file,
-			RedirectAttributes redirectAttributes) {
+    @PostMapping("/")
+    public String handleFileUpload(@RequestParam("file") MultipartFile file,
+            RedirectAttributes redirectAttributes) {
 
-		if (file.isEmpty()) {
-			LOG.info("File Looks Empty!");
-		}
+        if (file.isEmpty()) {
+            LOG.info("File upload attempt with an empty file.");
+            redirectAttributes.addFlashAttribute("message", "Please select a file to upload.");
+            return "redirect:/";
+        }
 
-		try (InputStream xmlFileInputStream = file.getInputStream();
-				InputStream xsdInputStream = getClass().getResourceAsStream("/payroll.xsd")) {
-			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			javax.xml.validation.Schema schema = schemaFactory.newSchema(new StreamSource(xsdInputStream));
-			javax.xml.validation.Validator validator = schema.newValidator();
-			validator.validate(new StreamSource(xmlFileInputStream));
+        try {
+            xmlProcessingService.validateAndProcess(file);
+            storageService.store(file);
+            redirectAttributes.addFlashAttribute("message",
+                    "You successfully uploaded " + file.getOriginalFilename() + "!");
+        } catch (XmlProcessingException e) {
+            LOG.error("Processing error for file {}: {}", file.getOriginalFilename(), e.getMessage());
+            redirectAttributes.addFlashAttribute("message",
+                    "Upload failed for file " + file.getOriginalFilename() + " due to processing error.");
+        }
 
-		} catch (IOException | SAXException e) {
-			LOG.info("File Reading or Parsing Error: {}" ,e.getMessage());
-			redirectAttributes.addFlashAttribute("message",
-				"Upload failed for file " + file.getOriginalFilename() + "!");
-				return "redirect:/";
-		}
-		storageService.store(file);
-		redirectAttributes.addFlashAttribute("message",
-				"You successfully uploaded " + file.getOriginalFilename() + "!");
+        return "redirect:/";
+    }
 
-		return "redirect:/";
-	}
-
-	@ExceptionHandler(StorageFileNotFoundException.class)
-	public ResponseEntity<?> handleStorageFileNotFound(StorageFileNotFoundException exc) {
-		return ResponseEntity.notFound().build();
-	}
-
-	private Validator initValidator() throws SAXException {
-		SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-		Source schemaFile = new StreamSource(getFile("payroll.xsd"));
-		Schema schema = factory.newSchema(schemaFile);
-		return schema.newValidator();
-	}
-
-	private File getFile(String location) {
-		return new File(getClass().getClassLoader().getResource(location).getFile());
-	}
+    // ... rest of the controller
 
 }
