@@ -11,6 +11,6 @@ services:
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: jwt_security
+      POSTGRES_DB: test
     volumes:
       - ./db-data/postgres/:/var/lib/postgresql/data/
